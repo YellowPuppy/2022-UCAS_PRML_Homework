@@ -1,0 +1,167 @@
+\documentclass{article}
+
+%
+% 引入模板的style文件
+%
+\usepackage{homework}
+
+\setCJKmainfont{SimSun}[AutoFakeBold] %宋体加粗
+\setCJKsansfont{SimHei}[AutoFakeBold] %黑体加粗
+
+
+\usepackage{minted} %配合minted宏包进行好看的高亮
+\usepackage{currfile} %配合minted宏包进行好看的高亮
+\usepackage{caption} %配合minted宏包进行好看的高亮
+\usepackage{tcolorbox} %配合minted宏包进行好看的高亮
+\usepackage{xcolor} %配合minted宏包进行好看的高亮
+\tcbuselibrary{skins} %配合minted宏包进行好看的高亮
+\tcbuselibrary{minted} %配合minted宏包进行好看的高亮
+\usemintedstyle{paraiso-dark} %配合minted宏包进行好看的高亮
+
+
+
+%
+% 封面
+%
+
+\title{
+	\includegraphics[width=0.65\textwidth]{images/title/ucas_logo 1.pdf}\\
+    \vspace{1in}
+    \textmd{\textbf{\hmwkClass}}\\
+	\textmd{\Large{\textbf{\hmwkClassID}}}\\
+    \textmd{\textbf{\hmwkTitle}}\\
+    \normalsize\vspace{0.1in}\large{\hmwkCompleteTime }\\
+    \vspace{0.1in}\large{\textit{\hmwkClassInstructor\ }}\\
+    \vspace{1in}
+	\includegraphics[width=0.25\textwidth]{images/title/Cyber.jpg}\\
+	\vspace{1in}
+}
+
+
+\author{
+	\hmwkAuthorName \\ 
+	\hmwkAuthorStuID \\
+	\hmwkAuthorInst \\
+	\hmwkAuthorzhuanye \\
+	\hmwkAuthorfangxiang
+	}
+\date{}
+
+\renewcommand{\part}[1]{\textbf{\large Part \Alph{partCounter}}\stepcounter{partCounter}\\}
+
+
+%
+% 正文部分
+%
+\begin{document}
+
+
+\maketitle
+
+
+%\include{chapters/ch01}
+%\include{chapters/ch02}
+%\include{chapters/ch03}
+%\include{chapters/ch04}
+%\include{chapters/ch05}
+
+
+\begin{homeworkProblem}
+	模型复杂度过低/过高通常会导致Bias和Variance有怎样的问题?
+
+	\solution 通常, 模型复杂度过低会导致偏差高且方差低(即欠拟合), 而复杂度过高则会导致偏差小但方差大(即过拟合).
+\end{homeworkProblem}
+
+\begin{homeworkProblem}
+	怎样判断且缓解过拟合/欠拟合问题?
+
+	\solution 主要是通过验证集上的误差来判断. 当校验误差一直减小时, 则说明模型目前处于欠拟合; 当校验误差先减小而后增大时, 则说明模型目前处于过拟合状态. 当模型处于欠拟合状态时, 需要增加模型复杂度, 具体措施有:
+	\begin{itemize}
+		\item 增加模型的迭代次数;
+		\item 增加更多特征;
+		\item 降低模型正则化水平.
+	\end{itemize}
+	当模型处于过拟合状态时, 需要降低模型复杂度, 具体措施有:
+	\begin{itemize}
+		\item 及早停止迭代;
+		\item 减少特征数量;
+		\item 提高模型正则化水平;
+		\item 扩大训练集.
+	\end{itemize}
+\end{homeworkProblem}
+
+\begin{homeworkProblem}
+	比较Bagging和Boosting算法的异同.
+
+	\solution \,\,Bagging和Boosting算法的异同:
+	\begin{itemize}
+		\item \textbf{不同点:} 这两类算法的不同点在于前者是对训练集做$m$次有放回随机抽样来得到$m$个子训练集, 从而分别\textbf{并行学习}得到$m$个基模型. 而后者的$m$个弱学习器是\textbf{按顺序进行学习}的, 并且有$m$次的训练集转化.
+		\item \textbf{相同点:} 相同点在于两者都分别利用$m$个弱模型做出$m$个预测, 并最终进行预测结果的整合.
+	\end{itemize}
+\end{homeworkProblem}
+
+
+\pagebreak
+
+
+\begin{homeworkProblem}
+	简述Adaboosting的流程.
+
+	\solution Adaboosting的流程如下算法\ref{alg:AdaBoost}中所示:
+	\begin{algorithm}[H]
+		\begin{algorithmic}[1]
+		\Require{给定训练集$\left( x_1,y_1 \right) ,\left( x_2,y_2 \right) \cdots ,\left( x_m,y_m \right)$, 其中$x_i\in X,y_i\in \left\{ -1,+1 \right\}$}
+		\Ensure{强分类器$H_{\text{final}}\left( x \right)$}
+		\State 初始化$D_1\left( i \right) =1/m,\forall i\in \left\{ 1,2,\cdots ,m \right\}$;
+		\For{$t=1,2,\cdots,T$}
+			\State 训练有误差的弱分类器$h_t:X\rightarrow \left\{ -1,+1 \right\} $;
+			\State $\displaystyle \epsilon _t=\text{Pr}_{i\sim D_t}\left[ h_t\left( x_i \right) \ne y_i \right] <\frac{1}{2}$; \Comment{如果error$\displaystyle =\frac{1}{2}$, 则学习器$h_1$在训练集$D_2$上的性能为随机猜测}
+			\State $\displaystyle \alpha _t=1/2\ln \left( \frac{1-\epsilon _t}{\epsilon _t} \right) >0$; \Comment{如果error越小, 则$\alpha_t$越大}
+			\State $\forall i\in \left\{ 1,2,\cdots ,m \right\} $, 做如下更新:\Comment{其中$Z_t$为正则化因子}$$D_{t+1}\left( i \right) =\frac{D_t\left( i \right)}{Z_t}\text{exp} \left( -\alpha _ty_ih_t\left( x_i \right) \right) =\frac{D_t\left( i \right)}{Z_t}\times \begin{cases}
+				e^{-\alpha _t},\text{若}y_i=h_t\left( x_i \right)\\
+				e^{\alpha _t},\text{若}y_i\ne h_t\left( x_i \right)\\
+			\end{cases}$$
+		\EndFor
+		\State \Return 强分类器$\displaystyle H_{\text{final}}\left( x \right) =\text{sign}\left( \sum_{t=1}^T{\alpha _th_t\left( x \right)} \right)$; \Comment{强分类器的权重较大}
+		\end{algorithmic}
+		\caption{AdaBoost算法流程}
+		\label{alg:AdaBoost}
+	\end{algorithm}
+\end{homeworkProblem}
+
+
+\begin{homeworkProblem}
+	随机森林更适合采用哪种决策树?
+
+	$\left( \text{A} \right) . \text{性能好}, \text{深度较深}\quad \quad \quad \left( \text{B} \right) . \text{性能弱}, \text{深度较浅}$
+
+	\solution 选择(A), 随机森林属于Bagging集成算法, 因为Bagging更适合对偏差低、方差高(即过拟合)的模型进行融合, 所以随机森林更适合性能好、深度较深(即过拟合)的决策树.
+\end{homeworkProblem}
+
+\begin{homeworkProblem}
+	基于树的Boosting更适合采用哪种决策树?
+
+	$\left( \text{A} \right) . \text{性能好}, \text{深度较深}\quad \quad \quad \left( \text{B} \right) . \text{性能弱}, \text{深度较浅}$
+
+	\solution 选择(B), 因为Boosting的基本思想是将弱学习器组合成强学习器. 故而基于树的Boosting更适合采用复杂度低的决策树, 即层数不深、性能弱的决策树.
+\end{homeworkProblem}
+
+
+\begin{homeworkProblem}
+	如果对决策树模型采用Bagging方式进行集成学习, 更适合采用哪种方法对决策树的超参(比如树的深度)进行调优?
+
+	$\left( \text{A} \right) . \text{交叉验证}\quad \quad \quad \left( \text{B} \right) . \text{包外估计}$
+
+	\solution 选择(B), 在Bagging中, 每个弱学习器只在原数据集的一部分上进行训练, 因此可以不用交叉验证而直接采用包外估计来进行超参调优.
+\end{homeworkProblem}
+
+
+
+
+
+% 引用文献
+%\bibliographystyle{unsrt}  % unsrt:根据引用顺序编号
+%\bibliography{refs}
+
+
+\end{document}
