@@ -1,0 +1,30 @@
+N = 10; %产生的数据点的个数
+x = rand(10,1); %产生均匀分布U(0,1)的10个点
+noise_sigma = 0.08; %噪声的方差为noise_sigma^2
+M = 9;
+y = sin(2*pi*x) + randn(10,1)*noise_sigma; %randn产生N(0,1)正态分布的数据
+figure (1)
+axis([0 1 -2 2])
+plot(x, y, 'b.')
+x_r = 0: 0.01: 1;
+y_r = sin(2*pi*x_r);
+hold on
+plot(x_r, y_r, 'b'); %数据的真实曲线(蓝色的)
+p_x = [];
+
+for m = 0 : M
+    p_x = [p_x, x.^m]; %产生[x^0;x^1;x^2,...,x^M]
+end
+p_x = p_x';
+w = pinv(p_x*p_x')*p_x*y;
+y_est = w'*p_x;
+figure(1);
+hold on
+x_cur = 0:0.01:1;
+
+y_cur = zeros(size(x_cur));
+for m = 0 : M
+    y_cur = y_cur + w(m + 1)*(x_cur.^m);
+end
+axis([0 1 -2 2])
+plot(x_cur, y_cur, 'r') % 画出红色的拟合曲线

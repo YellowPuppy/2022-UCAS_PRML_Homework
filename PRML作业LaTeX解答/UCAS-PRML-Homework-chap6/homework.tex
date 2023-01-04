@@ -1,0 +1,523 @@
+\documentclass{article}
+
+%
+% 引入模板的style文件
+%
+\usepackage{homework}
+
+\setCJKmainfont{SimSun}[AutoFakeBold] %宋体加粗
+\setCJKsansfont{SimHei}[AutoFakeBold] %黑体加粗
+
+
+\usepackage{minted} %配合minted宏包进行好看的高亮
+\usepackage{currfile} %配合minted宏包进行好看的高亮
+\usepackage{caption} %配合minted宏包进行好看的高亮
+\usepackage{tcolorbox} %配合minted宏包进行好看的高亮
+\usepackage{xcolor} %配合minted宏包进行好看的高亮
+\tcbuselibrary{skins} %配合minted宏包进行好看的高亮
+\tcbuselibrary{minted} %配合minted宏包进行好看的高亮
+\usemintedstyle{paraiso-dark} %配合minted宏包进行好看的高亮
+
+
+
+%
+% 封面
+%
+
+\title{
+	\includegraphics[width=0.6\textwidth]{images/title/ucas_logo 1.pdf}\\
+    \vspace{1in}
+    \textmd{\textbf{\hmwkClass}}\\
+	\textmd{\Large{\textbf{\hmwkClassID}}}\\
+    \textmd{\textbf{\hmwkTitle}}\\
+    \normalsize\vspace{0.1in}\large{\hmwkCompleteTime }\\
+    \vspace{0.1in}\large{\textit{\hmwkClassInstructor\ }}\\
+    \vspace{1in}
+	\includegraphics[width=0.25\textwidth]{images/title/Cyber.jpg}\\
+	\vspace{1in}
+}
+
+
+\author{
+	\hmwkAuthorName \\ 
+	\hmwkAuthorStuID \\
+	\hmwkAuthorInst \\
+	\hmwkAuthorzhuanye \\
+	\hmwkAuthorfangxiang
+	}
+\date{}
+
+\renewcommand{\part}[1]{\textbf{\large Part \Alph{partCounter}}\stepcounter{partCounter}\\}
+
+
+%
+% 正文部分
+%
+\begin{document}
+
+
+\maketitle
+
+
+%\include{chapters/ch01}
+%\include{chapters/ch02}
+%\include{chapters/ch03}
+%\include{chapters/ch04}
+%\include{chapters/ch05}
+
+\begin{homeworkProblem}
+	给定训练数据集$\boldsymbol{X}=\left( \begin{matrix}
+		1&		2&		5&		4\\
+		2&		5&		1&		2\\
+	\end{matrix} \right) ,\boldsymbol{y}=\left( \begin{matrix}
+		19&		26&		19&		20\\
+	\end{matrix} \right) ^{\text{T}}$, 令$\alpha=0.001,\boldsymbol{w}_0=\left( \begin{matrix}
+		1&		1\\
+	\end{matrix} \right) ^{\text{T}}$. 编程实现SGD和GD算法, 求解$\boldsymbol{w}$.
+
+	\solution 最优化问题(即代价函数)为$$\displaystyle \underset{\boldsymbol{w}}{\text{min}}J\left( \boldsymbol{w} \right) = \frac{1}{2N} \sum_{i=1}^N{\left( \boldsymbol{w}^{\text{T}}\boldsymbol{x}^{\left( i \right)}-y^{\left( i \right)} \right) ^2}	$$
+	于是批梯度下降(BGD)和梯度迭代更新规则分别为(具体的python训练代码见如下)
+	$$
+	\frac{\partial J\left( \boldsymbol{w} \right)}{\partial w_j}=\frac{1}{N}\sum_{i=1}^N{x_{j}^{\left( i \right)}\left( \boldsymbol{w}^{\text{T}}\boldsymbol{x}^{\left( i \right)}-y^{\left( i \right)} \right)},\quad w_j\gets w_j-\frac{\alpha}{N} \sum_{i=1}^N{\left( \boldsymbol{w}^{\text{T}}\boldsymbol{x}^{\left( i \right)}-y^{\left( i \right)} \right) x_{j}^{\left( i \right)}},\alpha >0
+	$$
+\begin{tcblisting}{listing engine=minted,boxrule=0.1mm,
+colback=blue!5!white,colframe=blue!75!black,
+listing only,left=5mm,enhanced,sharp corners=all,
+overlay={\begin{tcbclipinterior}\fill[red!20!blue!20!white] (frame.south west)
+rectangle ([xshift=5mm]frame.north west);\end{tcbclipinterior}},
+minted language=python,
+minted style=tango,
+minted options={fontsize=\small,breaklines,autogobble,linenos,numbersep=3mm}}
+# 批量梯度下降BGD
+# 拟合函数为：y = theta * x
+# 代价函数为：J = 1 / (2 * m) * ((theta * x) - y) * ((theta * x) - y).T;
+# 梯度迭代为: theta = theta - alpha / m * (x * (theta * x - y).T);
+import time
+import numpy as np
+# 1、多元线性回归的BGD程序
+def bgd_multi():
+    # 训练集，每个样本有2个分量
+    x = np.array([(1, 2), (2, 5), (5, 1), (4, 2)])
+    y = np.array([19, 26, 19, 20])
+    # 初始化
+    m, dim = x.shape
+    theta = np.ones(dim)  # 参数
+    alpha = 0.001  # 学习率
+    threshold = 0.0001  # 停止迭代的错误阈值
+    iterations = 1500  # 迭代次数
+    error = 0  # 初始错误为0
+    # 迭代开始
+    for i in range(iterations):
+        error = 1 / (2 * m) * np.dot((np.dot(x, theta) - y).T, (np.dot(x, theta) - y))
+        # 迭代停止
+        if abs(error) <= threshold:
+            break
+        theta -= alpha / m * (np.dot(x.T, (np.dot(x, theta) - y)))
+    print('BGD的迭代次数为%d,' % (i + 1), 'theta:', theta, ', error: %f' % error)
+if __name__ == '__main__':
+    start = time.time()
+    bgd_multi()
+    end = time.time()
+    print('运行时间为: ', (end - start) * 1000, 'ms')
+\end{tcblisting}
+	上述代码的输出结果为$\boldsymbol{w}=\left( \begin{matrix}
+		2.868&		4.565\\
+	\end{matrix} \right) ^{\text{T}}$, 循环迭代次数为1500, 循环终止时的线性拟合误差为$\epsilon = 6.995$, BGD算法运行时间为$13.84$ms.
+
+	而对于SGD算法, 最优化问题(即代价函数)仍为$$\displaystyle \underset{\boldsymbol{w}}{\text{min}}J\left( \boldsymbol{w} \right) = \frac{1}{2N} \sum_{i=1}^N{\left( \boldsymbol{w}^{\text{T}}\boldsymbol{x}^{\left( i \right)}-y^{\left( i \right)} \right) ^2}	$$
+	于是随机梯度下降(SGD)和梯度迭代更新规则分别为(具体的python训练代码见如下)
+	$$
+	\frac{\partial J\left( \boldsymbol{w} \right)}{\partial w_j}=\frac{1}{N}\sum_{i=1}^N{x_{j}^{\left( i \right)}\left( \boldsymbol{w}^{\text{T}}\boldsymbol{x}^{\left( i \right)}-y^{\left( i \right)} \right)},\quad w_j\gets w_j-\alpha \left( \boldsymbol{w}^{\text{T}}\boldsymbol{x}^{\left( i \right)}-y^{\left( i \right)} \right) x_{j}^{\left( i \right)},\alpha >0
+	$$
+\begin{tcblisting}{listing engine=minted,boxrule=0.1mm,
+colback=blue!5!white,colframe=blue!75!black,
+listing only,left=5mm,enhanced,sharp corners=all,
+overlay={\begin{tcbclipinterior}\fill[red!20!blue!20!white] (frame.south west)
+rectangle ([xshift=5mm]frame.north west);\end{tcbclipinterior}},
+minted language=python,
+minted style=tango,
+minted options={fontsize=\normalsize,breaklines,autogobble,linenos,numbersep=3mm}}
+# 随机梯度下降SGD
+import time
+import numpy as np
+# 2、多元线性回归的SGD程序
+def sgd():
+    # 训练集，每个样本有2个分量
+    x = np.array([(1, 2), (2, 5), (5, 1), (4, 2)])
+    y = np.array([19, 26, 19, 20])
+    # 初始化
+    m, dim = x.shape
+    theta = np.ones(dim)  # 参数
+    alpha = 0.001  # 学习率
+    threshold = 0.0001  # 停止迭代的错误阈值
+    iterations = 1500  # 迭代次数
+    error = 0  # 初始错误为0
+    # 迭代开始
+    for i in range(iterations):
+        error = 1 / (2 * m) * np.dot((np.dot(x, theta) - y).T, (np.dot(x, theta) - y))
+        # 迭代停止
+        if abs(error) <= threshold:
+            break
+        j = np.random.randint(0, m)
+        theta -= alpha * (x[j] * (np.dot(x[j], theta) - y[j]))
+    print('SGD的迭代次数为%d,' % (i + 1), 'theta:', theta, ', error: %f' % error)
+if __name__ == '__main__':
+    start = time.time()
+    sgd()
+    end = time.time()
+    print('运行时间为: ', (end - start) * 1000, 'ms')
+\end{tcblisting}
+	上述代码的输出结果为$\boldsymbol{w}=\left( \begin{matrix}
+	2.880&		4.613\\
+	\end{matrix} \right) ^{\text{T}}$, 循环迭代次数为1500, 循环终止时的线性拟合误差为$\epsilon = 7.01$, SGD算法的运行时间为$13.51$ms. 可以看出SGD算法的速度是略快于BGD算法的.
+\end{homeworkProblem}
+
+\pagebreak
+
+\begin{homeworkProblem}
+	利用下面表格\ref{tabel:Traindata}中的训练数据训练朴素贝叶斯分类器. 给定测试样本$\boldsymbol{x}=(2,S)^{\text{T}}$和$\boldsymbol{x}=(1,N)^{\text{T}}$, 请预测他们的标签.
+	\begin{table}[H]
+		\centering
+		\caption{Problem 2的训练数据}
+		\label{tabel:Traindata}
+		\begin{tabular}{c|ccccccccccccccc}
+		\hline
+		& 1   & 2   & 3   & 4   & 5  & 6  & 7  & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 \\ \hline
+		$x_1$ & 1   & 1   & 1   & 1   & 1  & 2  & 2  & 2 & 2 & 2  & 3  & 3  & 3  & 3  & 3  \\ \hline
+		$x_2$ & $S$ & $M$ & $M$ & $S$ & $S$  & $S$  & $M$  & $M$ & $L$ & $L$  & $L$  & $M$  & $M$  & $L$  & $L$  \\ \hline
+		$y$     & $-1$  & $-1$  & 1   & 1   & $-1$ & $-1$ & $-1$ & 1 & 1 & 1  & 1  & 1  & 1  & 1  & $-1$ \\ \hline
+		\end{tabular}
+	\end{table}
+	由于测试样本中出现了训练样本中未出现的特征分量, 所以需要对朴素贝叶斯分类器参数的极大似然估计做\textit{Laplace}平滑(其中平滑系数$\lambda$选取为1):
+	$$
+	p\left( y=1 \right) =\frac{\displaystyle \sum_{i=1}^N{I_{\left\{ y^{\left( i \right)}=1 \right\}}}+1}{N+K}=\frac{9+1}{15+2}=\frac{10}{17}\Rightarrow p\left( y=-1 \right) =1-\frac{10}{17}=\frac{7}{17}
+	$$
+	第1个特征分量的似然函数为
+	\begin{align}
+		p\left( x_1=1|y=1 \right) &=\frac{\displaystyle \sum_{i=1}^N{I_{\left\{ x_{1}^{\left( i \right)}=1\land y^{\left( i \right)}=1 \right\}}}+1}{\displaystyle \sum_{i=1}^N{I_{\left\{ y^{\left( i \right)}=1 \right\}}}+S_1}=\frac{2+1}{9+3}=\frac{1}{4}, \notag
+		\\
+		p\left( x_1=2|y=1 \right) &=\frac{\displaystyle \sum_{i=1}^N{I_{\left\{ x_{1}^{\left( i \right)}=2\land y^{\left( i \right)}=1 \right\}}}+1}{\displaystyle \sum_{i=1}^N{I_{\left\{ y^{\left( i \right)}=1 \right\}}}+S_1}=\frac{3+1}{9+3}=\frac{1}{3}, \notag
+		\\
+		p\left( x_1=3|y=1 \right) &=\frac{\displaystyle \sum_{i=1}^N{I_{\left\{ x_{1}^{\left( i \right)}=3\land y^{\left( i \right)}=1 \right\}}}+1}{\displaystyle \sum_{i=1}^N{I_{\left\{ y^{\left( i \right)}=1 \right\}}}+S_1}=\frac{4+1}{9+3}=\frac{5}{12} \notag
+	\end{align}
+	第2个特征分量的似然函数为:
+	\begin{align}
+		p\left( x_2=S|y=1 \right) &=\frac{\displaystyle \sum_{i=1}^N{I_{\left\{ x_{2}^{\left( i \right)}=S\land y^{\left( i \right)}=1 \right\}}}+1}{\displaystyle \sum_{i=1}^N{I_{\left\{ y^{\left( i \right)}=1 \right\}}}+S_2}=\frac{1+1}{9+4}=\frac{2}{13}, \notag
+		\\
+		p\left( x_2=M|y=1 \right) &=\frac{\displaystyle \sum_{i=1}^N{I_{\left\{ x_{2}^{\left( i \right)}=M\land y^{\left( i \right)}=1 \right\}}}+1}{\displaystyle \sum_{i=1}^N{I_{\left\{ y^{\left( i \right)}=1 \right\}}}+S_2}=\frac{4+1}{9+4}=\frac{5}{13}, \notag 
+	\end{align}
+	\begin{align}
+		p\left( x_2=L|y=1 \right) &=\frac{\displaystyle \sum_{i=1}^N{I_{\left\{ x_{2}^{\left( i \right)}=L\land y^{\left( i \right)}=1 \right\}}}+1}{\displaystyle \sum_{i=1}^N{I_{\left\{ y^{\left( i \right)}=1 \right\}}}+S_2}=\frac{4+1}{9+4}=\frac{5}{13}, \notag
+		\\
+		p\left( x_2=N|y=1 \right) &=\frac{\displaystyle \sum_{i=1}^N{I_{\left\{ x_{2}^{\left( i \right)}=N\land y^{\left( i \right)}=1 \right\}}}+1}{\displaystyle \sum_{i=1}^N{I_{\left\{ y^{\left( i \right)}=1 \right\}}}+S_2}=\frac{0+1}{9+4}=\frac{1}{13} \notag
+	\end{align}
+	预测表达式为
+	$$
+	p\left( y=1|\boldsymbol{x} \right) =\frac{p\left( \boldsymbol{x}|y=1 \right) p\left( y=1 \right)}{p\left( \boldsymbol{x} \right)}=\frac{\displaystyle \prod_{j=1}^D{p\left( x_j|y=1 \right)}p\left( y=1 \right)}{\displaystyle \prod_{j=1}^D{p\left( x_j|y=1 \right)}p\left( y=1 \right) +\displaystyle \prod_{j=1}^D{p\left( x_j|y=-1 \right)}p\left( y=-1 \right)}
+	$$
+	于是对于样本$\boldsymbol{x}^{(1)}=(2,S)^{\text{T}}$, 预测概率为
+	\begin{align}
+		p\left( y=1|\boldsymbol{x}^{\left( 1 \right)} \right) &=\frac{\frac{4}{12}\times \frac{2}{13}\times \frac{10}{17}}{\frac{4}{12}\times \frac{2}{13}\times \frac{10}{17}+\frac{2+1}{6+3}\times \frac{3+1}{6+4}\times \frac{7}{17}}=0.35461 \notag
+		\\
+		p\left( y=-1|\boldsymbol{x}^{\left( 1 \right)} \right) &=\frac{\frac{2+1}{6+3}\times \frac{3+1}{6+4}\times \frac{7}{17}}{\frac{4}{12}\times \frac{2}{13}\times \frac{10}{17}+\frac{2+1}{6+3}\times \frac{3+1}{6+4}\times \frac{7}{17}}=0.64539 \notag
+	\end{align}
+	所以样本$\boldsymbol{x}^{(1)}=(2,S)^{\text{T}}$的标签预测为$y=-1$.
+
+	而对于样本$\boldsymbol{x}^{(2)}=(1,N)^{\text{T}}$, 预测概率为
+	\begin{align}
+		p\left( y=1|\boldsymbol{x}^{\left( 2 \right)} \right) &=\frac{\frac{2+1}{9+3}\times \frac{0+1}{9+4}\times \frac{10}{17}}{\frac{2+1}{9+3}\times \frac{0+1}{9+4}\times \frac{10}{17}+\frac{3+1}{6+3}\times \frac{0+1}{6+4}\times \frac{7}{17}}=0.382003 \notag
+		\\
+		p\left( y=-1|\boldsymbol{x}^{\left( 2 \right)} \right) &=\frac{\frac{3+1}{6+3}\times \frac{0+1}{6+4}\times \frac{7}{17}}{\frac{2+1}{9+3}\times \frac{0+1}{9+4}\times \frac{10}{17}+\frac{3+1}{6+3}\times \frac{0+1}{6+4}\times \frac{7}{17}}=0.617997 \notag
+	\end{align}
+	所以样本$\boldsymbol{x}^{(2)}=(1,N)^{\text{T}}$的标签预测为$y=-1$.
+	上述算法可以用Python代码实现, 不妨将$S,M,L,N$分别记为$1,2,3,4$,具体代码如下:
+\begin{tcblisting}{listing engine=minted,boxrule=0.1mm,
+colback=blue!5!white,colframe=blue!75!black,
+listing only,left=5mm,enhanced,sharp corners=all,
+overlay={\begin{tcbclipinterior}\fill[red!20!blue!20!white] (frame.south west)
+rectangle ([xshift=5mm]frame.north west);\end{tcbclipinterior}},
+minted language=python,
+minted style=tango,
+minted options={fontsize=\normalsize,breaklines,autogobble,linenos,numbersep=3mm}}
+import numpy as np  
+from sklearn.naive_bayes import MultinomialNB
+X = np.array([[1, 1], [1, 2], [1, 2], [1, 1], [1, 1], [2, 1], [2, 2], [2, 2],
+             [2, 3], [2, 3], [3, 3], [3, 2], [3, 2], [3, 3], [3, 3]])
+# S,M,L,N分别用数字1,2,3,4替代
+Y = np.array([-1, -1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, -1])  
+clf = MultinomialNB(alpha = 1.0, fit_prior = True, class_prior = None)
+clf.fit(X, Y)   
+clf.predict_proba([[2, 1], [1, 4]]) #输出(2,S)和(1,N)划分到各个类别的概率值
+\end{tcblisting}
+	经过上述代码可得: 对于样本$\boldsymbol{x}^{(1)}=(2,S)^{\text{T}}$, 预测概率为$p\left( y=1|\boldsymbol{x}^{\left( 1 \right)} \right)=0.406,p\left( y=-1|\boldsymbol{x}^{\left( 1 \right)} \right)=0.594$, 因此标签为$y=-1$; 对于样本$\boldsymbol{x}^{(2)}=(1,N)^{\text{T}}$, 预测概率为$p\left( y=1|\boldsymbol{x}^{\left( 2 \right)} \right)=0.384,p\left( y=-1|\boldsymbol{x}^{\left( 2 \right)} \right)$
+	$=0.616$, 故标签为$y=-1$. 且经过MultinomialNB后所习得的(平滑)先验概率的对数为$-0.511, -0.916$.
+	\newpage
+	上述算法也可以用Matlab代码实现, 具体代码见下所示:
+\begin{tcblisting}{listing engine=minted,boxrule=0.1mm,
+colback=blue!5!white,colframe=blue!75!black,
+listing only,left=5mm,enhanced,sharp corners=all,
+overlay={\begin{tcbclipinterior}\fill[red!20!blue!20!white] (frame.south west)
+rectangle ([xshift=5mm]frame.north west);\end{tcbclipinterior}},
+minted language=matlab,
+minted style=tango,
+minted options={fontsize=\normalsize,breaklines,autogobble,linenos,numbersep=3mm}}
+n=input('请输入训练集的个数:n\n');
+k=2; A=zeros(n,3);%存储训练集，用来学习
+A(:,1)=input('请输入所有样本的第一个特征(用列向量表示)：\n');
+A(:,2)=input('请输入所有样本的第二个特征(用列向量表示)：\n');
+A(:,3)=input('请输入所有样本所属的类(用列向量表示)：\n');
+x1=input('请输入需要预测的样本的第一个特征：1或2或3 \n');
+x2=input('请输入需要预测的样本的第二个特征：S或M或L或N\n','s');
+%计算其属于1类的概率
+F1=zeros(1,3);
+for i=1:n
+    if A(i,3)==1
+        F1(1,1)=F1(1,1)+1;
+        if A(i,1)==x1
+            F1(1,2)=F1(1,2)+1;
+        end
+        if A(i,2)==x2
+            F1(1,3)=F1(1,3)+1;
+        end
+    end
+end
+C1=(F1(1,1)+1)/(n+k)*(F1(1,2)+1)/(F1(1,1)+3)*(F1(1,3)+1)/(F1(1,1)+4);
+%属于2类的概率
+F2=zeros(1,3);
+for i=1:n
+    if A(i,3)==-1
+        F2(1,1)=F2(1,1)+1;
+        if A(i,1)==x1
+            F2(1,2)=F2(1,2)+1;
+        end
+        if A(i,2)==x2
+            F2(1,3)=F2(1,3)+1;
+        end
+    end
+end
+C2=(F2(1,1)+1)/(n+k)*(F2(1,2)+1)/(F2(1,1)+3)*(F2(1,3)+1)/(F2(1,1)+4);
+if C1>C2
+    disp('该样本的类为1');
+else if C1==C2
+        disp('该样本的类为-1或1')
+    else
+        disp('该样本的类为-1')
+    end
+end
+\end{tcblisting}
+	\newpage
+	在命令行窗口的输出过程为:
+\begin{tcblisting}{listing engine=minted,boxrule=0.1mm,
+colback=blue!5!white,colframe=blue!75!black,
+listing only,left=5mm,enhanced,sharp corners=all,
+overlay={\begin{tcbclipinterior}\fill[red!20!blue!20!white] (frame.south west)
+rectangle ([xshift=5mm]frame.north west);\end{tcbclipinterior}},
+minted language=matlab,
+minted style=tango,
+minted options={fontsize=\normalsize,breaklines,autogobble,linenos,numbersep=3mm}}
+>> MultinomialNB
+请输入训练集的个数:n
+15
+请输入所有样本的第一个特征(用列向量表示)：
+[1,1,1,1,1,2,2,2,2,2,3,3,3,3,3]
+请输入所有样本的第二个特征(用列向量表示)：
+['S','M','M','S','S','S','M','M','L','L','L','M','M','L','L']
+请输入所有样本所属的类(用列向量表示)：
+[-1,-1,1,1,-1,-1,-1,1,1,1,1,1,1,1,-1]
+请输入需要预测的样本的第一个特征：1或2或3 
+1
+请输入需要预测的样本的第二个特征：S或M或L或N
+N
+该样本的类为-1
+\end{tcblisting}
+\begin{tcblisting}{listing engine=minted,boxrule=0.1mm,
+colback=blue!5!white,colframe=blue!75!black,
+listing only,left=5mm,enhanced,sharp corners=all,
+overlay={\begin{tcbclipinterior}\fill[red!20!blue!20!white] (frame.south west)
+rectangle ([xshift=5mm]frame.north west);\end{tcbclipinterior}},
+minted language=matlab,
+minted style=tango,
+minted options={fontsize=\normalsize,breaklines,autogobble,linenos,numbersep=3mm}}
+>> MultinomialNB
+请输入训练集的个数:n
+15
+请输入所有样本的第一个特征(用列向量表示)：
+[1,1,1,1,1,2,2,2,2,2,3,3,3,3,3]
+请输入所有样本的第二个特征(用列向量表示)：
+['S','M','M','S','S','S','M','M','L','L','L','M','M','L','L']
+请输入所有样本所属的类(用列向量表示)：
+[-1,-1,1,1,-1,-1,-1,1,1,1,1,1,1,1,-1]
+请输入需要预测的样本的第一个特征：1或2或3 
+2
+请输入需要预测的样本的第二个特征：S或M或L或N
+S
+该样本的类为-1
+\end{tcblisting}
+	通过Matlab右侧的变量值栏目可以计算出: 测试样本$\boldsymbol{x}^{(1)}=(2,S)^{\text{T}}$的预测概率为$p\left( y=1|\boldsymbol{x}^{\left( 1 \right)} \right)=0.3546,p\left( y=-1|\boldsymbol{x}^{\left( 1 \right)} \right)=0.6454$, 因此标签为$y=-1$. $\boldsymbol{x}^{(2)}=(1,N)^{\text{T}}$的预测概率为$p\left( y=1|\boldsymbol{x}^{\left( 2 \right)} \right)=0.3820,p\left( y=-1|\boldsymbol{x}^{\left( 1 \right)} \right)=0.6180$, 因此标签为$y=-1$.
+\end{homeworkProblem}
+
+
+\pagebreak
+
+
+\begin{homeworkProblem}
+	生成式判别模型: 高斯贝叶斯分类器和逻辑回归
+	\\
+
+	\part{}
+	
+	考虑一类特定的高斯朴素贝叶斯分类器, 其中
+	\begin{itemize}
+		\item $Y$是服从伯努利分布的布尔变量, 其中参数$\pi=P(Y=1),P(Y=0)=1-\pi$;
+		\item $X=[x_1,\cdots,x_D]^{\text{T}}$, 其中特征分量$x_i$是连续的随机变量. 对于每个$x_i$, $P(x_i|Y=k)$是高斯分布$\mathcal{N}(\mu_{ik},\sigma_i)$. 注意到$\sigma_i$是高斯分布的标准差(且不依赖于$k$);
+		\item 给定$Y$时, $\forall i\neq j,x_i$和$x_j$都是条件独立的(因此称之为朴素分类器).
+	\end{itemize}
+	\textbf{问题:} 请证明判别式分类器(如逻辑回归)与上述特定类别的高斯朴素贝叶斯分类器之间的关系正是逻辑回归所使用的形式.
+
+	\solution 先利用贝叶斯公式:
+	\begin{align}
+		P\left( Y=1|X \right) &=\frac{P\left( X|Y=1 \right) \cdot P\left( Y=1 \right)}{P\left( X|Y=0 \right) \cdot P\left( Y=0 \right) +P\left( X|Y=1 \right) \cdot P\left( Y=1 \right)} \notag
+		\\
+		&=\frac{1}{\displaystyle 1+\frac{P\left( X|Y=0 \right) \cdot P\left( Y=0 \right)}{P\left( X|Y=1 \right) \cdot P\left( Y=1 \right)}} \notag
+		\\
+		&=\frac{1}{\displaystyle 1+\text{exp} \left( \text{ln} \frac{P\left( X|Y=0 \right) \cdot P\left( Y=0 \right)}{P\left( X|Y=1 \right) \cdot P\left( Y=1 \right)} \right)} \notag
+	\end{align}
+	再代入$P(Y=1)=\pi,P(Y=0)=1-\pi$, 同时将$\text{ln}$中的乘法变为加法:
+	$$
+	P\left( Y=1|X \right) =\frac{1}{\displaystyle 1+\text{exp} \left( \text{ln} \frac{P\left( X|Y=0 \right)}{P\left( X|Y=1 \right)}+\text{ln} \frac{P\left( Y=0 \right)}{P\left( Y=1 \right)} \right)}=\frac{1}{\displaystyle 1+\text{exp} \left( \text{ln} \frac{P\left( X|Y=0 \right)}{P\left( X|Y=1 \right)}+\text{ln} \frac{1-\pi}{\pi} \right)}
+	$$
+	因为$X$是$D$维的, 同时每一个特征都是相互条件独立的, 因此$\displaystyle P\left( X|Y \right) =\prod_{i=1}^D{P\left( x_i|Y \right)}$, 于是有
+	$$
+	P\left( Y=1|X \right) =\frac{1}{1+\text{exp} \left(\displaystyle  \text{ln} \frac{\displaystyle \prod_{i=1}^D{P\left( x_i|Y=0 \right)}}{\displaystyle \prod_{i=1}^D{P\left( x_i|Y=1 \right)}}+\text{ln} \frac{1-\pi}{\pi} \right)}
+	$$
+	由于$\forall x_i$, $P(x_i|Y=k)$都服从高斯分布$\mathcal{N}(\mu_{ik},\sigma_i)$, 即$\displaystyle P\left( x_i|Y=k \right) =\frac{1}{\sqrt{2\pi}\sigma _i}\text{exp} \left( -\frac{\left( x_i-\mu _{ik} \right) ^2}{2\sigma _{i}^{2}} \right) 	$. 我们先看$\text{ln} \frac{\displaystyle \prod_{i=1}^D{P\left( x_i|Y=0 \right)}}{\displaystyle \prod_{i=1}^D{P\left( x_i|Y=1 \right)}}$:
+	\begin{align}
+		\text{ln} \frac{\displaystyle \prod_{i=1}^D{P\left( x_i|Y=0 \right)}}{\displaystyle \prod_{i=1}^D{P\left( x_i|Y=1 \right)}}&=\text{ln} \prod_{i=1}^D{\frac{1}{\sqrt{2\pi}\sigma _i}\text{exp} \left( -\frac{\left( x_i-\mu _{i0} \right) ^2}{2\sigma _{i}^{2}} \right)}-\text{ln} \prod_{i=1}^D{\frac{1}{\sqrt{2\pi}\sigma _i}\text{exp} \left( -\frac{\left( x_i-\mu _{i1} \right) ^2}{2\sigma _{i}^{2}} \right)} \notag
+		\\
+		&=\sum_{i=1}^D{\left( \text{ln} \frac{1}{\sqrt{2\pi}\sigma _i}-\frac{\left( x_i-\mu _{i0} \right) ^2}{2\sigma _{i}^{2}} \right)}-\sum_{i=1}^D{\left( \text{ln} \frac{1}{\sqrt{2\pi}\sigma _i}-\frac{\left( x_i-\mu _{i1} \right) ^2}{2\sigma _{i}^{2}} \right)} \notag
+		\\
+		&=\sum_{i=1}^D{\left( \frac{\left( x_i-\mu _{i1} \right) ^2}{2\sigma _{i}^{2}}-\frac{\left( x_i-\mu _{i0} \right) ^2}{2\sigma _{i}^{2}} \right)}=\sum_{i=1}^D{\left( \frac{\mu _{i0}-\mu _{i1}}{\sigma _{i}^{2}}x_i+\frac{\mu _{i1}^{2}-\mu _{i0}^{2}}{2\sigma _{i}^{2}} \right)} \notag
+	\end{align}
+	再将其代入到$P(Y=1|X)$的表达式中:
+	\begin{align}
+		P\left( Y=1|X \right) &=\frac{1}{1+\text{exp} \left\{ \displaystyle  \sum_{i=1}^D{\left( \frac{\mu _{i0}-\mu _{i1}}{\sigma _{i}^{2}}x_i+\frac{\mu _{i1}^{2}-\mu _{i0}^{2}}{2\sigma _{i}^{2}} \right)}+\text{ln} \frac{1-\pi}{\pi} \right\}} \notag
+		\\
+		&=\frac{1}{1+\text{exp} \left\{ -\left[ \displaystyle  \sum_{i=1}^D{\underset{\text{即}w_i}{\underbrace{\frac{\mu _{i1}-\mu _{i0}}{\sigma _{i}^{2}}}}x_i}+\underset{\text{即}b}{\underbrace{\left( \sum_{i=1}^D{\frac{\mu _{i0}^{2}-\mu _{i1}^{2}}{2\sigma _{i}^{2}}}+\text{ln} \frac{\pi}{1-\pi} \right) }} \right] \right\}} \notag
+		\\
+		&=\frac{1}{1+\text{exp} \left[ -\left( \displaystyle \sum_{i=1}^D{w_ix_i}+b \right) \right]} \notag
+	\end{align}
+	同理可得:
+	$$
+	P\left( Y=0|X=1 \right) =1-P\left( Y=1|X \right) =\frac{\text{exp} \left[ -\left( \displaystyle \sum_{i=1}^D{w_ix_i}+b \right) \right]}{1+\text{exp} \left[ -\left( \displaystyle \sum_{i=1}^D{w_ix_i}+b \right) \right]}
+	$$
+	也就是说, 上述特定类别的高斯朴素贝叶斯分类器其实正好就是逻辑回归的形式! 逻辑回归的参数$w$通常采用SGD算法去学习, 而而高斯朴素贝叶斯分类器根据假设直接给出了这些参数, 这也说明了逻辑回归是一种更强的模型, 因为它的假设很弱, 而朴素贝叶斯的假设非常的强.
+	\newpage
+
+	\part{}
+	
+	\textbf{一般的高斯朴素贝叶斯分类器和逻辑回归:} 将“$P(x_i|Y=k)$的标准差$\sigma_i$不依赖于$k$”的假设删除掉. 即$\forall x_i,P(x_i|Y=k)$是高斯分布$\mathcal{N}(\mu_{ik},\sigma_{ik})$, 其中$i=1,\cdots,D$且$k=0,1$.
+
+	\textbf{问题:} 更一般的高斯朴素贝叶斯分类器中$P(Y|X)$的表达式是否仍然形如逻辑回归的形式. 写出$P(Y|X)$的新格式来证明你的答案.
+
+	\solution 其实就是去掉高斯分布中的方差与其所属类别无关的假设, 即$P(x_i|Y=k)$服从高斯分布$\mathcal{N}(\mu_{ik},\sigma_{ik})$. 前面的推导与上面一致, 即
+	$$
+	P\left( Y=1|X \right) =\frac{1}{1+\text{exp} \left(\displaystyle  \text{ln} \frac{\displaystyle \prod_{i=1}^D{P\left( x_i|Y=0 \right)}}{\displaystyle \prod_{i=1}^D{P\left( x_i|Y=1 \right)}}+\text{ln} \frac{1-\pi}{\pi} \right)}
+	$$
+	由于高斯分布假设更改, 即$\displaystyle P\left( x_i|Y=k \right) =\frac{1}{\sqrt{2\pi}\sigma _{ik}}\text{exp} \left( -\frac{\left( x_i-\mu _{ik} \right) ^2}{2\sigma _{ik}^{2}} \right)$, 将其代入$\text{ln} \frac{\displaystyle \prod_{i=1}^D{P\left( x_i|Y=0 \right)}}{\displaystyle \prod_{i=1}^D{P\left( x_i|Y=1 \right)}}$得到:
+	\begin{align}
+		\text{ln} \frac{\displaystyle \prod_{i=1}^D{P\left( x_i|Y=0 \right)}}{\displaystyle \prod_{i=1}^D{P\left( x_i|Y=1 \right)}}&=\text{ln} \prod_{i=1}^D{\frac{1}{\sqrt{2\pi}\sigma _{i0}}\text{exp} \left( -\frac{\left( x_i-\mu _{i0} \right) ^2}{2\sigma _{i0}^{2}} \right)}-\text{ln} \prod_{i=1}^D{\frac{1}{\sqrt{2\pi}\sigma _{i1}}\text{exp} \left( -\frac{\left( x_i-\mu _{i1} \right) ^2}{2\sigma _{i1}^{2}} \right)} \notag
+		\\
+		&=\sum_{i=1}^D{\left[ \text{ln} \frac{1}{\sqrt{2\pi}\sigma _{i0}}-\frac{\left( x_i-\mu _{i0} \right) ^2}{2\sigma _{i0}^{2}} \right]}-\sum_{i=1}^D{\left[ \text{ln} \frac{1}{\sqrt{2\pi}\sigma _{i1}}-\frac{\left( x_i-\mu _{i1} \right) ^2}{2\sigma _{i1}^{2}} \right]} \notag
+		\\
+		&=\sum_{i=1}^D{\left[ \left( \frac{1}{2\sigma _{i1}^{2}}-\frac{1}{2\sigma _{i0}^{2}} \right) x_{i}^{2}+\left( \frac{\mu _{i0}}{\sigma _{i0}^{2}}-\frac{\mu _{i1}}{\sigma _{i1}^{2}} \right) x_i+\left( \frac{\mu _{i1}^{2}}{2\sigma _{i1}^{2}}-\frac{\mu _{i0}^{2}}{2\sigma _{i0}^{2}} \right) +\text{ln} \frac{\sigma _{i1}}{\sigma _{i0}} \right]} \notag
+	\end{align}
+	将上式结果代入$P(Y=1|X)$得到:
+	$$
+	P\left( Y=1|X \right) =\frac{1}{1+\text{exp} \left( \displaystyle \sum_{i=1}^D{\left[ \underset{\text{二次项非零}}{\underbrace{\left( \frac{1}{2\sigma _{i1}^{2}}-\frac{1}{2\sigma _{i0}^{2}} \right) }}x_{i}^{2}+\left( \frac{\mu _{i0}}{\sigma _{i0}^{2}}-\frac{\mu _{i1}}{\sigma _{i1}^{2}} \right) x_i+\left( \frac{\mu _{i1}^{2}}{2\sigma _{i1}^{2}}-\frac{\mu _{i0}^{2}}{2\sigma _{i0}^{2}} \right) +\text{ln} \frac{\sigma _{i1}}{\sigma _{i0}} \right]}+\text{ln} \frac{1-\pi}{\pi} \right)}
+	$$
+	显然上述形式中的二次项系数非零, 即去掉了高斯分布中方差与类别无关的假设后朴素贝叶斯变成了非线性的方式. 但是逻辑回归中没有二次项, \textbf{所以这种假设条件下的高斯朴素贝叶斯分类器无法直接用Logistic回归表示}.
+	\newpage
+
+	\part{}
+
+	\textbf{高斯贝叶斯分类器和逻辑回归:} 现在考虑下述假设中的高斯贝叶斯分类器(不带有“朴素”):
+	\begin{itemize}
+		\item $Y$是服从伯努利分布的布尔变量, 其中参数$\pi=P(Y=1),P(Y=0)=1-\pi$;
+		\item $X=[x_1,x_2]^{\text{T}}$, 即我们只考虑样本的特征维数是2的情况, 并且每个特征分量都是一个连续的随机变量. 给定$y$时, $x_1,x_2$不再是条件独立的了. 我们假设$P(x_1,x_2|Y=k)$是双变量高斯分布$\mathcal{N}(\mu_{1k},\mu_{2k},\sigma_1,\sigma_2,\rho)$, 其中$\mu_{1k},\mu_{2k}$分别是$x_1,x_2$的均值, $\sigma_1,\sigma_2$分别是$x_1,x_2$的标准差, 并且$\rho$是$x_1,x_2$的相关系数. 因此双变量高斯分布的密度函数为$$P\left( x_1,x_2|Y=k \right) =\frac{1}{2\pi \sigma _1\sigma _2\sqrt{1-\rho ^2}}\text{exp} \left\{ \frac{1}{1-\rho ^2}\left[ -\frac{\left( x_1-\mu _{1k} \right) ^2}{2\sigma _{1}^{2}}+\frac{\rho}{\sigma _1\sigma _2}\left( x_1-\mu _{1k} \right) \left( x_2-\mu _{2k} \right) -\frac{\left( x_2-\mu _{2k} \right) ^2}{2\sigma _{2}^{2}} \right] \right\} 
+		$$
+	\end{itemize}
+	\textbf{问题:} 不朴素的高斯贝叶斯分类器中$P(Y|X)$的表达式是否仍然形如逻辑回归的形式. 写出$P(Y|X)$的新格式来证明你的答案.
+
+	\solution 由于$X=[x_1,x_2]^{\text{T}}$, 直接使用\textbf{Part A}中推导的公式$$P\left( Y=1|X \right) =\frac{1}{1+\text{exp} \left( \displaystyle \text{ln} \frac{P\left( X|Y=0 \right)}{P\left( X|Y=1 \right)}+\text{ln} \frac{1-\pi}{\pi} \right)}
+	$$
+	将题中的二元正态分布的密度函数表达式代入$P(Y=1|X)$, 此时我们不妨先看$\text{ln} P\left( X|Y=k \right) $:
+	\begin{align}
+		\text{ln} P\left( X|Y=k \right) =\text{ln} \frac{1}{2\pi \sigma _1\sigma _2\sqrt{1-\rho ^2}}+\frac{1}{1-\rho ^2}\left[ -\frac{\left( x_1-\mu _{1k} \right) ^2}{2\sigma _{1}^{2}}+\frac{\rho}{\sigma _1\sigma _2}\left( x_1-\mu _{1k} \right) \left( x_2-\mu _{2k} \right) -\frac{\left( x_2-\mu _{2k} \right) ^2}{2\sigma _{2}^{2}} \right]  \notag
+	\end{align}
+	于是经过\textbf{精心整理}可得:
+	\begin{align}
+		\text{ln} \frac{P\left( X|Y=0 \right)}{P\left( X|Y=1 \right)}&=\text{ln} P\left( X|Y=0 \right) -\text{ln} P\left( X|Y=1 \right)  \notag
+		\\
+		&=\frac{1}{1-\rho ^2}\left\{ \left[ \frac{\mu _{10}-\mu _{11}}{\sigma _{1}^{2}}+\frac{\rho \left( \mu _{21}-\mu _{20} \right)}{\sigma _1\sigma _2} \right] x_1+\left[ \frac{\mu _{20}-\mu _{21}}{\sigma _{2}^{2}}+\frac{\rho \left( \mu _{11}-\mu _{10} \right)}{\sigma _1\sigma _2} \right] x_2 \right.  \notag
+		\\
+		&\left. +\left[ \frac{\mu _{11}^{2}-\mu _{10}^{2}}{2\sigma _{1}^{2}}+\frac{\mu _{21}^{2}-\mu _{20}^{2}}{2\sigma _{2}^{2}}+\frac{\rho \left( \mu _{10}\mu _{20}-\mu _{11}\mu _{21} \right)}{\sigma _1\sigma _2} \right] \right\}  \notag
+	\end{align}
+	将上述结果代入到$P(Y=1|X)$, 可将$P(Y=1|X)$表示为逻辑回归的形式:
+	$$
+	P\left( Y=1|X \right) =\frac{1}{1+\text{exp} \left[ -\left( \displaystyle \sum_{i=1}^2{w_ix_i}+b \right) \right]}
+	$$
+	其中
+	\begin{align}
+		&w_1=\frac{-1}{1-\rho ^2}\left[ \frac{\mu _{10}-\mu _{11}}{\sigma _{1}^{2}}+\frac{\rho \left( \mu _{21}-\mu _{20} \right)}{\sigma _1\sigma _2} \right]  \notag
+		\\
+		&w_2=\frac{-1}{1-\rho ^2}\left[ \frac{\mu _{20}-\mu _{21}}{\sigma _{2}^{2}}+\frac{\rho \left( \mu _{11}-\mu _{10} \right)}{\sigma _1\sigma _2} \right] \notag
+		\\
+		&b=\frac{-1}{1-\rho ^2}\left[ \frac{\mu _{11}^{2}-\mu _{10}^{2}}{2\sigma _{1}^{2}}+\frac{\mu _{21}^{2}-\mu _{20}^{2}}{2\sigma _{2}^{2}}+\frac{\rho \left( \mu _{10}\mu _{20}-\mu _{11}\mu _{21} \right)}{\sigma _1\sigma _2} \right] +\text{ln} \frac{1-\pi}{\pi} \notag
+	\end{align}
+	因此可以知道\textbf{去掉“naive”的高斯贝叶斯分类器依然是线性的, 可以用Logistic回归表示}.
+	\newpage
+	通过上述推导, 分别去掉了两个不同的假设来揭开高斯朴素贝叶斯分类器的面纱, 最后简单总结为:
+	\begin{itemize}
+		\item \textbf{传统的高斯朴素贝叶斯等价于通过假设直接从训练数据中算出参数的逻辑回归;}
+		\item \textbf{去掉高斯分布中方差与类别无关的假设后, 高斯朴素贝叶斯将变成非线性分类器, 其中多了二次项特征;}
+		\item \textbf{移除特征之间的条件独立性假设后, 高斯贝叶斯依然是线性的, 但是其联合概率密度计算会比较复杂.}
+	\end{itemize}
+\end{homeworkProblem}
+
+\begin{homeworkProblem}
+	\textbf{Logistic回归(LR)的MLE参数估计}: 如果有参数的正则项(用以抑制过拟合), 那么该如何估计参数? 其中
+	$$
+	l\left( \boldsymbol{w} \right) =\text{log} L\left( \boldsymbol{w} \right) -\lambda \left\| \boldsymbol{w} \right\| _{2}^{2}=\sum_{i=1}^N{y^{\left( i \right)}\text{log} f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) +\left( 1-y^{\left( i \right)} \right) \text{log} \left( 1-f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) \right)}-\lambda \left\| \boldsymbol{w} \right\| _{2}^{2}
+	$$
+
+	\solution 易知$$l\left( \boldsymbol{w} \right) =\sum_{i=1}^N{y^{\left( i \right)}\text{log} f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) +\left( 1-y^{\left( i \right)} \right) \text{log} \left( 1-f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) \right)}-\lambda \boldsymbol{w}^{\text{T}}\boldsymbol{w}
+	$$
+	故可以如下求得梯度:
+	$$
+	\frac{\partial l\left( \boldsymbol{w} \right)}{\partial w_j}=\sum_{i=1}^N{\left[ y^{\left( i \right)}\frac{1}{f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right)}\cdot \frac{\partial f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right)}{\partial w_j}+\left( 1-y^{\left( i \right)} \right) \frac{1}{1-f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right)}\cdot \frac{-\partial \left( f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) \right)}{\partial w_j} \right]}-2\lambda w_j
+	$$
+	又因为
+	$$
+	\frac{\partial f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right)}{\partial w_j}=\underset{g\left( z \right) =\frac{1}{1+\text{exp} \left( -z \right)}\Rightarrow g'\left( z \right) =g\left( z \right) \left( 1-g\left( z \right) \right)}{\underbrace{\frac{\partial g\left( \boldsymbol{w}^{\text{T}}\boldsymbol{x}^{\left( i \right)} \right)}{\partial w_j}=g\left( \boldsymbol{w}^{\text{T}}\boldsymbol{x}^{\left( i \right)} \right) \left( 1-g\left( \boldsymbol{w}^{\text{T}}\boldsymbol{x}^{\left( i \right)} \right) \right) \boldsymbol{x}_{j}^{\left( i \right)}}}=f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) \left( 1-f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) \right) \boldsymbol{x}_{j}^{\left( i \right)}
+	$$
+	于是得到梯度表达式:
+	\begin{align}
+		\frac{\partial l\left( \boldsymbol{w} \right)}{\partial w_j}&=\sum_{i=1}^N{\left\{ y^{\left( i \right)}\cdot \left[ \left( 1-f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) \right) \boldsymbol{x}_{j}^{\left( i \right)} \right] +\left( 1-y^{\left( i \right)} \right) \left( -1 \right) \cdot \left( f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) \boldsymbol{x}_{j}^{\left( i \right)} \right) \right\}}-2\lambda w_j \notag
+		\\
+		&=\sum_{i=1}^N{\left[ y^{\left( i \right)}\cdot \left( 1-f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) \right) \cdot \boldsymbol{x}_{j}^{\left( i \right)}+\left( y^{\left( i \right)}-1 \right) \cdot f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) \cdot \boldsymbol{x}_{j}^{\left( i \right)} \right]}-2\lambda w_j \notag
+		\\
+		&=\sum_{i=1}^N{\left[ y^{\left( i \right)}-f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) \right]}\boldsymbol{x}_{j}^{\left( i \right)}-2\lambda w_j \notag
+	\end{align}
+	为了得到MLE的参数估计, 我们需要使用SGD算法来得到$\boldsymbol{w}$, 因此SGD的梯度更新规则如下:
+	$$w_j\gets w_j+\alpha \left\{ \left[ y^{\left( i \right)}-f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) \right] \boldsymbol{x}_{j}^{\left( i \right)}-2\lambda w_j \right\} =\left( 1-2\lambda \alpha \right) w_j+\alpha \left[ y^{\left( i \right)}-f\left( \boldsymbol{x}^{\left( i \right)},\boldsymbol{w} \right) \right] \boldsymbol{x}_{j}^{\left( i \right)}
+	$$
+	其中$\alpha$为步长; $\lambda$为超参数, 需要手动调整来观察过拟合的抑制情况.
+\end{homeworkProblem}
+
+
+% 引用文献
+%\bibliographystyle{unsrt}  % unsrt:根据引用顺序编号
+%\bibliography{refs}
+
+
+\end{document}
